@@ -1,10 +1,21 @@
 import pandas as pd
-file_path ="data/raw/train.parquet"
-df = pd.read_parquet(file_path)
-print("\nDATASET LOADED SUCCESSFULLY!")
-df.head()
 
-df.shape
+df = pd.read_parquet("data/raw/train.parquet")
 
-print("\nColumn Names:")
-print(df.columns.tolist())
+print("Dataset Shape:")
+print(df.shape)
+
+print("\nFirst 5 Rows:")
+print(df.head())
+
+print("\nDataset Information:")
+df.info()
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+print("\nDuplicate Rows:")
+print(df.duplicated().sum())
+
+print("\nPrice Details:")
+print(df["product_price"].describe())
