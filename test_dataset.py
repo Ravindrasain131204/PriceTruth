@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-df = pd.read_parquet("data/raw/train.parquet")
+import textwrap
+
+df = pd.read_parquet("data/processed/cleaned_flipkart_reviews.parquet")
 
 print("Dataset Shape:")
 print(df.shape)
@@ -20,9 +22,6 @@ print(df.duplicated().sum())
 print("\nPrice Details:")
 print(df["product_price"].describe())
 
-print("\nTotal Duplicate Rows:")
-print(df.duplicated().sum())
-
 print("\nDuplicate Records:")
 print(df[df.duplicated()].head(10).to_string())
 
@@ -36,8 +35,11 @@ print("\nTotal Unique Products:")
 print(df["product_name"].nunique())
 
 print("\nProduct Price Summary:")
-product_data = df.groupby("product_name")["product_price"].agg(
-    ["count", "mean", "min", "max"]
+product_data = df.groupby("product_name").agg(
+    review_count=("product_name", "count"),
+    average_price=("product_price", "mean"),
+    minimum_price=("product_price", "min"),
+    maximum_price=("product_price", "max")
 )
 
 print(product_data.head(10))
@@ -45,14 +47,14 @@ print(product_data.head(10))
 print("\nMost Reviewed Products:")
 print(df["product_name"].value_counts().head(10))
 
-print("\nProducts with Different Prices:")
+print("\nProducts with Multiple Recorded Prices:")
 
-price_changes = df.groupby("product_name")["product_price"].nunique()
+multiple_prices = df.groupby("product_name")["product_price"].nunique()
 
-print(price_changes[price_changes > 1])
+print(multiple_prices[multiple_prices > 1])
 
-print("\nTotal Products with Different Prices:")
-print((price_changes > 1).sum())
+print("\nTotal Products with Multiple Recorded Prices:")
+print((multiple_prices > 1).sum())
 
 
 print("\nSentiment Distribution:")
@@ -102,26 +104,42 @@ plt.show()
 
 top_products = df["product_name"].value_counts().head(10)
 
-plt.figure(figsize=(10, 7))
-top_products.sort_values().plot(kind="barh")
+product_labels = [
+    textwrap.fill(name, width=50)
+    for name in top_products.index
+]
 
-plt.title("Top 10 Most Reviewed Products")
-plt.xlabel("Number of Reviews")
-plt.ylabel("Product Name")
+plt.figure(figsize=(13, 7))
 
-plt.tight_layout()
-plt.savefig("reports/top_reviewed_products.png")
+plt.barh(product_labels, top_products.values)
+
+plt.title("Top 10 Most Reviewed Products", fontsize=13)
+plt.xlabel("Number of Reviews", fontsize=10)
+
+plt.tick_params(axis="y", labelsize=8)
+
+plt.subplots_adjust(left=0.42, hspace=0.4)
+
+plt.savefig(
+    "reports/top_reviewed_products.png",
+    dpi=200,
+    bbox_inches="tight"
+)
+
 plt.show()
-
 
 # Product Price Distribution
 
-plt.figure(figsize=(8, 5))
-df["product_price"].dropna().plot(kind="hist", bins=30)
+# Product-level Price Distribution
 
-plt.title("Product Price Distribution")
-plt.xlabel("Price in INR")
-plt.ylabel("Frequency")
+product_prices = df.groupby("product_name")["product_price"].median()
+
+plt.figure(figsize=(8, 5))
+product_prices.plot(kind="hist", bins=30)
+
+plt.title("Product-Level Price Distribution")
+plt.xlabel("Median Product Price (INR)")
+plt.ylabel("Number of Products")
 
 plt.tight_layout()
 plt.savefig("reports/price_distribution.png")

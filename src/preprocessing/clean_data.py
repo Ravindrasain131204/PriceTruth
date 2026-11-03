@@ -49,12 +49,25 @@ print("\nData Types:")
 print(clean_df.dtypes)
 
 # Check invalid prices
+invalid_prices = clean_df[clean_df["product_price"] <= 0]
+
 print("\nInvalid Prices:")
-print(clean_df[clean_df["product_price"] <= 0])
+print(invalid_prices)
 
 # Check invalid ratings
+invalid_ratings = clean_df[
+    (clean_df["Rate"] < 1) | (clean_df["Rate"] > 5)
+]
+
 print("\nInvalid Ratings:")
-print(clean_df[(clean_df["Rate"] < 1) | (clean_df["Rate"] > 5)])
+print(invalid_ratings)
+
+# Remove invalid records
+clean_df = clean_df[
+    (clean_df["product_price"] > 0) &
+    (clean_df["Rate"] >= 1) &
+    (clean_df["Rate"] <= 5)
+].copy()
 
 
 # Save cleaned dataset
