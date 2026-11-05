@@ -38,15 +38,23 @@ print("\nProduct-wise Average Ratings:")
 print(product_ratings.head(10))
 
 
-# Product rating and review count
+## Product-wise Price and Rating Analysis
+
 product_analysis = df.groupby("display_product_name").agg(
+    average_price=("product_price", "mean"),
+    minimum_price=("product_price", "min"),
+    maximum_price=("product_price", "max"),
+    median_price=("product_price", "median"),
     average_rating=("Rate", "mean"),
     total_reviews=("Rate", "count")
+).round(2)
+
+
+print("\nComplete Product Analytics:")
+
+print(
+    product_analysis.head(10).to_string()
 )
-
-print("\nProduct Rating and Review Count:")
-print(product_analysis.head(10))
-
 
 # Filter products with at least 20 reviews
 reliable_products = product_analysis[
@@ -94,6 +102,30 @@ plt.savefig(
 plt.show()
 
 
+# Load Product Catalog
+
+catalog = pd.read_csv("reports/product_catalog.csv")
+
+# Normalize product names for matching
+
+df["clean_product_name"] = (
+    df["display_product_name"]
+    .str.replace(r"\s+", " ", regex=True)
+    .str.strip()
+)
+
+# Merge Product Attributes
+
+df = df.merge(
+    catalog[
+        ["clean_product_name", "brand", "category", "capacity", "wattage"]
+    ],
+    on="clean_product_name",
+    how="left"
+)
+
+print("\nProduct Attributes Successfully Merged!")
+
 # Check original product names containing question marks
 print("\nProduct Names Containing Question Marks:")
 
@@ -112,3 +144,57 @@ print(
     "\nTotal Products with Question Marks:",
     question_mark_products["product_name"].nunique()
 )
+
+# =====================================
+# BRAND ANALYTICS
+# =====================================
+
+print("\n========== BRAND ANALYTICS ==========")
+
+brand_analysis = df.groupby("brand").agg(
+    total_products=("clean_product_name", "nunique"),
+    average_price=("product_price", "mean"),
+    average_rating=("Rate", "mean"),
+    total_reviews=("Rate", "count")
+).round(2)
+
+brand_analysis = brand_analysis.sort_values(
+    by="total_products",
+    ascending=False
+)
+
+print("\nTop 10 Brands:")
+print(brand_analysis.head(10).to_string())
+
+
+# =====================================
+# CATEGORY ANALYTICS
+# =====================================
+
+print("\n========== CATEGORY ANALYTICS ==========")
+
+category_analysis = df.groupby("category").agg(
+    total_products=("clean_product_name", "nunique"),
+    average_price=("product_price", "mean"),
+    average_rating=("Rate", "mean"),
+    total_reviews=("Rate", "count")
+).round(2)
+
+category_analysis = category_analysis.sort_values(
+    by="total_reviews",
+    ascending=False
+)
+
+print("\nCategory Performance:")
+print(category_analysis.to_string())
+
+
+# =====================================
+# SAVE ANALYTICS REPORTS
+# =====================================
+
+brand_analysis.to_csv("reports/brand_analysis.csv")
+
+category_analysis.to_csv("reports/category_analysis.csv")
+
+print("\nBrand and Category Reports Saved Successfully!")
