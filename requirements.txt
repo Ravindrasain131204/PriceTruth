@@ -7,3 +7,4 @@ scikit-learn
 jupyter
 ipykernel
 pyarrow
+streamlit==1.66.1
