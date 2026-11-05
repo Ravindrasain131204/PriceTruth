@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 # Load cleaned dataset
 df = pd.read_parquet(
@@ -211,6 +212,55 @@ def extract_category(product_name):
 
 df["category"] = df["clean_product_name"].apply(extract_category)
 
+ 
+ # Extract Product Capacity
+
+def extract_capacity(product_name):
+
+    name = str(product_name)
+
+    pattern = r'\b\d+(?:\s*-\s*\d+)?(?:\.\d+)?\s?(?:LITRE|LITER|ML|KG|G|TB|GB|MB|TON|L)\b'
+
+    match = re.search(pattern, name, re.IGNORECASE)
+
+    if match:
+        return match.group().strip()
+
+    return "Not Specified"
+
+# Extract Product Wattage
+
+def extract_wattage(product_name):
+    name = str(product_name)
+
+    pattern = r'\b\d+(?:\.\d+)?\s?W\b'
+
+    match = re.search(pattern, name, re.IGNORECASE)
+
+    if match:
+        return match.group().strip()
+
+    return "Not Specified"
+
+df["capacity"] = df["clean_product_name"].apply(extract_capacity)
+df["wattage"] = df["clean_product_name"].apply(extract_wattage)
+
+print("\nWattage Extraction Results:")
+print(
+    df[["clean_product_name", "wattage"]]
+    .drop_duplicates()
+    .head(30)
+    .to_string(index=False)
+)
+
+print("\nCapacity Extraction Results:")
+
+print(
+    df[["clean_product_name", "capacity"]]
+    .drop_duplicates()
+    .head(30)
+    .to_string(index=False)
+)
 
 print("\nCategory Extraction Results:")
 
@@ -239,10 +289,12 @@ unknown_categories = df[
 
 print(unknown_categories.to_string(index=False))
 
+
+
 # Create Product Catalog
 
 product_catalog = (
-    df[["clean_product_name", "brand", "category"]]
+    df[["clean_product_name", "brand", "category", "capacity", "wattage"]]
     .drop_duplicates()
     .sort_values("clean_product_name")
 )
