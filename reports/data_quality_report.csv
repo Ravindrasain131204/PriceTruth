@@ -1,0 +1,11 @@
+Metric,Value
+Total Records,26771.0
+Total Columns,7.0
+Unique Products,150.0
+Missing Values,0.0
+Duplicate Records,0.0
+Invalid Prices,0.0
+Invalid Ratings,0.0
+Passed Checks,5.0
+Total Checks,5.0
+Data Quality Score,100.0
